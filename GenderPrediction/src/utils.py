@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 # Models
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 
 # Visual purpose
 import colorama
@@ -57,7 +58,7 @@ def logistic_regression(X_train, y_train, X_test, y_test, random_state, regulari
 
     return accuracy, f1, cm
 
-def support_vector_machine(X_train, y_train, X_test, y_test, random_state, misclass_penalty=1.0, kernel='rbf'):
+def support_vector_machine(X_train, y_train, X_test, y_test, random_state, misclass_penalty=1.0, kernel="rbf"):
     """
     misclass_penalty: penalty for misclassifying a data point, smaller ~ large margin
     Possible kernels: 'linear', 'poly' (degree 3), 'rbf', 'sigmoid'
@@ -72,5 +73,27 @@ def support_vector_machine(X_train, y_train, X_test, y_test, random_state, miscl
 
     # Evaluate
     accuracy, f1, cm = evaluate("Support Vector Machine - Seed: " + str(random_state) + " - Misclass_penalty: " + str(misclass_penalty) + " - Kernel: " + str(kernel), y_test, y_pred)
+
+    return accuracy, f1, cm
+
+def k_nearest_neighbors(X_train, y_train, X_test, y_test, n_neighbors=5, neighbor_weight="uniform", p=2, metric="minkowski"):
+    """
+    n_neighbors = number of neighbors
+    Possible neighbor weights: 'uniform', 'distance', [callable]
+    Possible metrics: 'cityblock' (manhattan), 'cosine', 'euclidean', 'minkowski' (p: power parameter)
+    """
+    
+    knn = KNeighborsClassifier(n_neighbors=n_neighbors, weights=neighbor_weight, p=p, metric=metric)
+
+    knn.fit(X_train, y_train)
+
+    # Making predictions on the test set
+    y_pred = knn.predict(X_test)
+
+    # Evaluate
+    if metric == "minkowski": 
+        accuracy, f1, cm = evaluate("K Nearest Neighbors" + " - N_neighbors: " + str(n_neighbors) + " - Neighbor_weight: " + str(neighbor_weight) + " - p: " + str(p) + " - Metric: " + str(metric), y_test, y_pred)
+    else:
+        accuracy, f1, cm = evaluate("K Nearest Neighbors" + " - N_neighbors: " + str(n_neighbors) + " - Neighbor_weight: " + str(neighbor_weight) + " - Metric: " + str(metric), y_test, y_pred)
 
     return accuracy, f1, cm

@@ -9,7 +9,7 @@ import tf_idf
 
 def main():
     # Set random seed
-    RANDOM_STATE = 1989
+    RANDOM_STATE = 2023
     
     parent_directory = os.path.abspath(os.path.join(os.getcwd(), ".."))
     file_path = os.path.join(parent_directory, "dataset/name_full.csv")
@@ -29,8 +29,24 @@ def main():
     tfidf_X_train, tfidf_X_test = utils.truncated_svd(tfidf_X_train, tfidf_X_test, random_state=RANDOM_STATE)
     
     # Apply different models
-    ### utils.logistic_regression(tfidf_X_train, y_train, tfidf_X_test, y_test, random_state=RANDOM_STATE, regularization="ridge")
-    utils.support_vector_machine(tfidf_X_train, y_train, tfidf_X_test, y_test, random_state=RANDOM_STATE, kernel="sigmoid")
+    """
+    utils.logistic_regression(tfidf_X_train, y_train, tfidf_X_test, y_test, 
+                              random_state=RANDOM_STATE, 
+                              regularization="ridge", 
+                              regularization_strength=1)
+    """
+    """
+    utils.support_vector_machine(tfidf_X_train, y_train, tfidf_X_test, y_test, 
+                                 random_state=RANDOM_STATE, 
+                                 misclass_penalty=5.0,
+                                 kernel="linear",
+                                 )
+    """
+    utils.k_nearest_neighbors(tfidf_X_train, y_train, tfidf_X_test, y_test,
+                              n_neighbors=15,
+                              neighbor_weight="distance",
+                              p=2,
+                              metric="cosine")
 
 if __name__ == "__main__":
     main()
