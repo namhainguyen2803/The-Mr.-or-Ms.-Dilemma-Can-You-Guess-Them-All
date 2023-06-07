@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from utils import *
 import tf_idf
 from metrics import Metric
+from truncated_svd import truncated_svd
 
 def main():
     # Set random seed

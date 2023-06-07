@@ -1,4 +1,3 @@
-from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import GridSearchCV
 from metrics import Metric
 
@@ -12,13 +11,6 @@ import colorama
 from colorama import Fore
 colorama.init(autoreset=True)
 import warnings
-
-def truncated_svd(X_train, X_test, random_state, n_components=100):
-    svd = TruncatedSVD(n_components=n_components, random_state=random_state)
-    svd.fit(X_train)
-    transformed_X_train = svd.transform(X_train)
-    transformed_X_test = svd.transform(X_test)
-    return transformed_X_train, transformed_X_test 
 
 def support_vector_machine(X_train, y_train, X_test, y_test, random_state, 
                            misclass_penalty=1.0, kernel="rbf",
