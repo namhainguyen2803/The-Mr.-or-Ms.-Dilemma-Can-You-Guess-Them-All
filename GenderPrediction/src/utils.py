@@ -13,23 +13,6 @@ from colorama import Fore
 colorama.init(autoreset=True)
 import warnings
 
-def evaluate(model_info, y_true, y_pred):
-    """
-    Evaluate the model: accuracy, f1 score, confusion matrix
-    """
-    print(Fore.LIGHTYELLOW_EX + model_info)
-
-    accuracy = accuracy_score(y_true, y_pred)
-    print(Fore.LIGHTBLUE_EX + "Accuracy:", round(accuracy, 4))
-
-    f1 = f1_score(y_true, y_pred)
-    print(Fore.LIGHTBLUE_EX + "F1-score:", round(f1, 4))
-
-    cm = confusion_matrix(y_true, y_pred)
-    print(Fore.LIGHTBLUE_EX + "Confusion matrix:\n", cm)
-
-    return accuracy, f1, cm
-
 def truncated_svd(X_train, X_test, random_state, n_components=100):
     svd = TruncatedSVD(n_components=n_components, random_state=random_state)
     svd.fit(X_train)
@@ -52,11 +35,6 @@ def support_vector_machine(X_train, y_train, X_test, y_test, random_state,
 
         # Making predictions on the test set
         y_pred = svm.predict(X_test)
-
-        # Evaluate
-        accuracy, f1, cm = evaluate("Support Vector Machine - Seed: " + str(random_state) + " - Misclass_penalty: " + str(misclass_penalty) + " - Kernel: " + str(kernel), y_test, y_pred)
-
-        return accuracy, f1, cm
     
     elif grid_search == True:
         svm = SVC(random_state=random_state)
@@ -72,9 +50,6 @@ def support_vector_machine(X_train, y_train, X_test, y_test, random_state,
         
         # Making predictions on the test set, WITH THE BEST ESTIMATOR OBTAINED
         y_pred = gs.best_estimator_.predict(X_test)
-
-        # Evaluate
-        accuracy, f1, cm = evaluate("Support Vector Machine - Seed: " + str(random_state) + " - With hyperparameters above", y_test, y_pred)
 
 def k_nearest_neighbors(X_train, y_train, X_test, y_test, n_neighbors=5, neighbor_weight="uniform", p=2, metric="minkowski"):
     """
@@ -98,37 +73,20 @@ def k_nearest_neighbors(X_train, y_train, X_test, y_test, n_neighbors=5, neighbo
 
     return accuracy, f1, cm
 
-class MyLogisticRegression:
-    """
-    regularization_strength: inverse of alpha coefficient in regularization
-    Possible regularizations: 'lasso', 'ridge', None
-    """
-    def __init__(self, random_state, 
-                regularization="ridge", regularization_strength=1,
-                grid_search=False, scoring=None, param_grid=None, cv=0):
+class MyModel:
+    def __init__(self, X_train, X_test, y_train, y_test, grid_search, scoring):
         
-        self.random_state = random_state
-
-        self.regularization = regularization
-        self.regularization_strength = regularization_strength
-
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        
         self.grid_search = grid_search
         self.scoring = scoring
-        self.param_grid = param_grid
-        self.cv = cv
-
-        if grid_search == False:
-            if regularization == "lasso":
-                self.model = LogisticRegression(penalty="l1", solver="liblinear", C=regularization_strength, random_state=random_state)
-            elif regularization == "ridge":
-                self.model = LogisticRegression(penalty="l2", solver="lbfgs", C=regularization_strength, random_state=random_state)
-            else:
-                self.model = LogisticRegression(penalty=None, solver="lbfgs", C=regularization_strength, random_state=random_state)
         
-        elif grid_search == True:
-            self.model = LogisticRegression(random_state=random_state)
-            self.gs = GridSearchCV(estimator=self.model, scoring=scoring, param_grid=param_grid, cv=cv)
-            
+        self.model = None
+        self.gs = None
+
     def fit(self, X_train, y_train):
         if self.grid_search == False:
             self.model.fit(X_train, y_train)
@@ -137,7 +95,7 @@ class MyLogisticRegression:
                 warnings.filterwarnings("ignore")
                 self.gs.fit(X_train, y_train)
                 
-                print(Fore.LIGHTYELLOW_EX + "Logistic Regression - CV based on " + self.scoring)
+                print(Fore.LIGHTYELLOW_EX + "CV based on " + self.scoring)
                 print(Fore.LIGHTBLUE_EX + "Best hyperparameters:", self.gs.best_params_)
                 print(Fore.LIGHTBLUE_EX + "Best validation score:",round(self.gs.best_score_, 4))
 
@@ -152,3 +110,46 @@ class MyLogisticRegression:
             return self.model.predict_proba(X_test)
         elif self.grid_search == True:
             return self.gs.best_estimator_.predict_proba(X_test)
+    
+    def evaluate(self):
+        self.fit(self.X_train, self.y_train)
+        print(Fore.LIGHTYELLOW_EX + "Metrics")
+        y_pred = self.predict(self.X_test)
+        y_proba = self.predict_proba(self.X_test)
+        
+        self.metric = Metric(self.y_test, y_pred, y_proba[:, 1])
+
+        classification_report = self.metric.getClassificationReport()
+        print(Fore.LIGHTBLUE_EX + "Classification report:")
+        print(classification_report)
+
+        log_loss = self.metric.getLogLoss()
+        print(Fore.LIGHTBLUE_EX + "Log loss:")
+        print(round(log_loss, 4))
+
+class MyLogisticRegression(MyModel):
+    """
+    regularization_strength: inverse of alpha coefficient in regularization
+    Possible regularizations: 'lasso', 'ridge', None
+    """
+    def __init__(self, X_train, X_test, y_train, y_test, random_state, 
+                regularization="ridge", regularization_strength=1,
+                grid_search=False, scoring=None, param_grid=None, cv=0):
+        
+        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+
+        if grid_search == False:
+            if regularization == "lasso":
+                self.model = LogisticRegression(penalty="l1", solver="liblinear", C=regularization_strength, random_state=random_state)
+            elif regularization == "ridge":
+                self.model = LogisticRegression(penalty="l2", solver="lbfgs", C=regularization_strength, random_state=random_state)
+            else:
+                self.model = LogisticRegression(penalty=None, solver="lbfgs", C=regularization_strength, random_state=random_state)
+        
+        elif grid_search == True:
+            self.model = LogisticRegression(random_state=random_state)
+            self.gs = GridSearchCV(estimator=self.model, scoring=scoring, param_grid=param_grid, cv=cv)
+            
+    def fit(self, X_train, y_train):
+        print(Fore.LIGHTYELLOW_EX + "LOGISTIC REGRESSION")
+        super().fit(X_train, y_train)
