@@ -1,5 +1,6 @@
 from sklearn.decomposition import TruncatedSVD
-from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.model_selection import GridSearchCV
+from metrics import Metric
 
 # Models
 from sklearn.linear_model import LogisticRegression
@@ -10,6 +11,7 @@ from sklearn.neighbors import KNeighborsClassifier
 import colorama
 from colorama import Fore
 colorama.init(autoreset=True)
+import warnings
 
 def evaluate(model_info, y_true, y_pred):
     """
@@ -33,48 +35,46 @@ def truncated_svd(X_train, X_test, random_state, n_components=100):
     svd.fit(X_train)
     transformed_X_train = svd.transform(X_train)
     transformed_X_test = svd.transform(X_test)
-    return transformed_X_train, transformed_X_test
+    return transformed_X_train, transformed_X_test 
 
-def logistic_regression(X_train, y_train, X_test, y_test, random_state, regularization="ridge", regularization_strength=1):
-    """
-    regularization_strength: inverse of alpha coefficient in regularization
-    Possible regularizations: 'lasso', 'ridge', None
-    """
-
-    if regularization == "lasso":
-        logreg = LogisticRegression(penalty="l1", solver="liblinear", C=regularization_strength, random_state=random_state)
-    elif regularization == "ridge":
-        logreg = LogisticRegression(penalty="l2", solver="lbfgs", C=regularization_strength, random_state=random_state)
-    else:
-        logreg = LogisticRegression(penalty=None, solver="lbfgs", C=regularization_strength, random_state=random_state)
-
-    logreg.fit(X_train, y_train)
-
-    # Making predictions on the test set
-    y_pred = logreg.predict(X_test)
-
-    # Evaluate
-    accuracy, f1, cm = evaluate("Logistic Regression - Seed: " + str(random_state) + " - Regularization: " + str(regularization) + " - Regularization_strength: " + str(regularization_strength), y_test, y_pred)
-
-    return accuracy, f1, cm
-
-def support_vector_machine(X_train, y_train, X_test, y_test, random_state, misclass_penalty=1.0, kernel="rbf"):
+def support_vector_machine(X_train, y_train, X_test, y_test, random_state, 
+                           misclass_penalty=1.0, kernel="rbf",
+                           grid_search=False, scoring=None, param_grid=None, cv=0):
     """
     misclass_penalty: penalty for misclassifying a data point, smaller ~ large margin
     Possible kernels: 'linear', 'poly' (degree 3), 'rbf', 'sigmoid'
     """
     
-    svm = SVC(C=misclass_penalty, kernel=kernel, random_state=random_state)
+    if grid_search == False:
+        svm = SVC(C=misclass_penalty, kernel=kernel, random_state=random_state)
 
-    svm.fit(X_train, y_train)
+        svm.fit(X_train, y_train)
 
-    # Making predictions on the test set
-    y_pred = svm.predict(X_test)
+        # Making predictions on the test set
+        y_pred = svm.predict(X_test)
 
-    # Evaluate
-    accuracy, f1, cm = evaluate("Support Vector Machine - Seed: " + str(random_state) + " - Misclass_penalty: " + str(misclass_penalty) + " - Kernel: " + str(kernel), y_test, y_pred)
+        # Evaluate
+        accuracy, f1, cm = evaluate("Support Vector Machine - Seed: " + str(random_state) + " - Misclass_penalty: " + str(misclass_penalty) + " - Kernel: " + str(kernel), y_test, y_pred)
 
-    return accuracy, f1, cm
+        return accuracy, f1, cm
+    
+    elif grid_search == True:
+        svm = SVC(random_state=random_state)
+        gs = GridSearchCV(estimator=svm, scoring=scoring, param_grid=param_grid, cv=cv)
+        
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore")
+            gs.fit(X_train, y_train)
+        
+        print(Fore.LIGHTYELLOW_EX + "Support Vector Machine - CV based on " + scoring)
+        print(Fore.LIGHTBLUE_EX + "Best hyperparameters:", gs.best_params_)
+        print(Fore.LIGHTBLUE_EX + "Best validation score:",round(gs.best_score_, 4))
+        
+        # Making predictions on the test set, WITH THE BEST ESTIMATOR OBTAINED
+        y_pred = gs.best_estimator_.predict(X_test)
+
+        # Evaluate
+        accuracy, f1, cm = evaluate("Support Vector Machine - Seed: " + str(random_state) + " - With hyperparameters above", y_test, y_pred)
 
 def k_nearest_neighbors(X_train, y_train, X_test, y_test, n_neighbors=5, neighbor_weight="uniform", p=2, metric="minkowski"):
     """
@@ -97,3 +97,58 @@ def k_nearest_neighbors(X_train, y_train, X_test, y_test, n_neighbors=5, neighbo
         accuracy, f1, cm = evaluate("K Nearest Neighbors" + " - N_neighbors: " + str(n_neighbors) + " - Neighbor_weight: " + str(neighbor_weight) + " - Metric: " + str(metric), y_test, y_pred)
 
     return accuracy, f1, cm
+
+class MyLogisticRegression:
+    """
+    regularization_strength: inverse of alpha coefficient in regularization
+    Possible regularizations: 'lasso', 'ridge', None
+    """
+    def __init__(self, random_state, 
+                regularization="ridge", regularization_strength=1,
+                grid_search=False, scoring=None, param_grid=None, cv=0):
+        
+        self.random_state = random_state
+
+        self.regularization = regularization
+        self.regularization_strength = regularization_strength
+
+        self.grid_search = grid_search
+        self.scoring = scoring
+        self.param_grid = param_grid
+        self.cv = cv
+
+        if grid_search == False:
+            if regularization == "lasso":
+                self.model = LogisticRegression(penalty="l1", solver="liblinear", C=regularization_strength, random_state=random_state)
+            elif regularization == "ridge":
+                self.model = LogisticRegression(penalty="l2", solver="lbfgs", C=regularization_strength, random_state=random_state)
+            else:
+                self.model = LogisticRegression(penalty=None, solver="lbfgs", C=regularization_strength, random_state=random_state)
+        
+        elif grid_search == True:
+            self.model = LogisticRegression(random_state=random_state)
+            self.gs = GridSearchCV(estimator=self.model, scoring=scoring, param_grid=param_grid, cv=cv)
+            
+    def fit(self, X_train, y_train):
+        if self.grid_search == False:
+            self.model.fit(X_train, y_train)
+        elif self.grid_search == True:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore")
+                self.gs.fit(X_train, y_train)
+                
+                print(Fore.LIGHTYELLOW_EX + "Logistic Regression - CV based on " + self.scoring)
+                print(Fore.LIGHTBLUE_EX + "Best hyperparameters:", self.gs.best_params_)
+                print(Fore.LIGHTBLUE_EX + "Best validation score:",round(self.gs.best_score_, 4))
+
+    def predict(self, X_test):
+        if self.grid_search == False:
+            return self.model.predict(X_test)
+        elif self.grid_search == True:
+            return self.gs.best_estimator_.predict(X_test)
+
+    def predict_proba(self, X_test):
+        if self.grid_search == False:
+            return self.model.predict_proba(X_test)
+        elif self.grid_search == True:
+            return self.gs.best_estimator_.predict_proba(X_test)
