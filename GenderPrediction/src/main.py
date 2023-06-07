@@ -37,16 +37,9 @@ def main():
         'penalty': [None, "l1", "l2"],
         'C': [0.01, 0.03, 0.1, 0.3, 1, 3]
     }
-    logreg = MyLogisticRegression(random_state=RANDOM_STATE,
+    logreg = MyLogisticRegression(tfidf_X_train, tfidf_X_test, y_train, y_test, random_state=RANDOM_STATE,
                                 grid_search=True, scoring="accuracy", param_grid=LOGREG_PARAM_GRID, cv=5)
-    logreg.fit(tfidf_X_train, y_train)
-    y_pred = logreg.predict(tfidf_X_test)
-    y_proba = logreg.predict_proba(tfidf_X_test)
-    logreg_metric = Metric(y_test, y_pred, y_proba[:, 1])
-    
-    pr_disp = logreg_metric.getRocCurveClass1()
-    pr_disp.plot()
-    plt.show()
+    logreg.evaluate()
 
 if __name__ == "__main__":
     main()
