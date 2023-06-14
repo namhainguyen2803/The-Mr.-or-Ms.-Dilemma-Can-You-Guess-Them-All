@@ -1,3 +1,7 @@
+# Basic imports
+import numpy as np
+
+# Hyperparameter tuning, model performance assessment
 from sklearn.model_selection import GridSearchCV
 from metrics import Metric
 
@@ -5,6 +9,9 @@ from metrics import Metric
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 # Visual purpose
 import warnings
@@ -146,4 +153,83 @@ class MyKNearestNeighbor(MyModel):
     
     def fit(self):
         print(Fore.LIGHTYELLOW_EX + "K NEAREST NEIGHBORS")
+        super().fit()
+
+class MyGaussianNaiveBayes(MyModel):
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        super().__init__(X_train, X_test, y_train, y_test, False, None)
+
+        self.model = GaussianNB()
+    
+    def fit(self):
+        print(Fore.LIGHTYELLOW_EX + "GUASSIAN NAIVE BAYES")
+        super().fit()
+    
+class MyMultinomialNaiveBayes(MyModel):
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        super().__init__(X_train, X_test, y_train, y_test, False, None)
+
+        self.model = MultinomialNB()
+    
+    def fit(self):
+        print(Fore.LIGHTYELLOW_EX + "MULTINOMIAL NAIVE BAYES")
+        super().fit()
+
+class MyBernoulliNaiveBayes(MyModel):
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        super().__init__(X_train, X_test, y_train, y_test, False, None)
+
+        self.model = BernoulliNB()
+    
+    def fit(self):
+        print(Fore.LIGHTYELLOW_EX + "BERNOULLI NAIVE BAYES")
+        super().fit()
+
+class MyDecisionTree(MyModel):
+    def __init__(self, X_train, X_test, y_train, y_test, random_state,
+                 split_criterion="entropy", max_depth=None, min_samples_split=2, min_samples_leaf=1,
+                 max_leaf_nodes=None, max_features=None, ccp_alpha=0.0,
+                 grid_search=False, scoring=None, param_grid=None, cv=0):
+        
+        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+
+        if grid_search == False:
+            self.model = DecisionTreeClassifier(criterion=split_criterion, max_depth=max_depth,
+                                                min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
+                                                max_leaf_nodes=max_leaf_nodes, max_features=max_features,
+                                                random_state=random_state, ccp_alpha=ccp_alpha)
+        
+        elif grid_search == True:
+            self.model = DecisionTreeClassifier(random_state=random_state)
+            self.gs = GridSearchCV(estimator=self.model, scoring=scoring, param_grid=param_grid, cv=cv)
+    
+    def fit(self):
+        print(Fore.LIGHTYELLOW_EX + "DECISION TREE")
+        super().fit()
+
+class MyRandomForest(MyModel):
+    def __init__(self, X_train, X_test, y_train, y_test, random_state,
+                 n_estimators=100, split_criterion="entropy", max_depth=None, min_samples_split=2, min_samples_leaf=1,
+                 max_leaf_nodes=None, max_features=None, ccp_alpha=0.0,
+                 bootstrap=True, oob_score=True, max_samples=None,
+                 grid_search=False, scoring=None, param_grid=None, cv=0):
+        
+        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+
+        if grid_search == False:
+            self.model = RandomForestClassifier(n_estimators=n_estimators, criterion=split_criterion, max_depth=max_depth, 
+                                                min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
+                                                max_leaf_nodes=max_leaf_nodes, max_features=max_features,
+                                                bootstrap=bootstrap, oob_score=oob_score, max_samples=max_samples,
+                                                random_state=random_state, ccp_alpha=ccp_alpha)
+        
+        elif grid_search == True:
+            self.model = RandomForestClassifier(random_state=random_state)
+            self.gs = GridSearchCV(estimator=self.model, scoring=scoring, param_grid=param_grid, cv=cv)
+    
+    def fit(self):
+        print(Fore.LIGHTYELLOW_EX + "RANDOM FOREST")
         super().fit()
