@@ -15,15 +15,16 @@ def main():
     # Apply different models
     
         ## LOGREG
-    """
+    
     LOGREG_PARAM_GRID = {
-        'penalty': [None, "l1", "l2"],
-        'C': [0.01, 0.03, 0.1, 0.3, 1, 3]
+        'penalty': [None, "l1", "l2", "elasticnet"],
+        'C': [0.01, 0.03, 0.1, 0.3, 1, 3],
+        'l1_ratio': [0.2, 0.4, 0.6, 0.8]
     }
     logreg = MyLogisticRegression(tfidf_X_train, tfidf_X_test, y_train, y_test, random_state=RANDOM_STATE,
                                 grid_search=True, scoring="accuracy", param_grid=LOGREG_PARAM_GRID, cv=5)
     logreg.evaluate()
-    """
+    
         ## SVM
     """
     SVM_PARAM_GRID = {
@@ -76,6 +77,8 @@ def main():
                         grid_search=True, scoring="accuracy", param_grid=DT_PARAM_GRID, cv=5)
     dt.evaluate()
     """
+        ### RF
+    """
     RF_PARAM_DRIG = {
         'n_estimators': [20, 40, 60],
         'criterion': ["entropy", "gini"],
@@ -92,6 +95,7 @@ def main():
     rf = MyRandomForest(tfidf_X_train, tfidf_X_test, y_train, y_test, random_state=RANDOM_STATE,
                         grid_search=True, scoring="accuracy", param_grid = RF_PARAM_DRIG, cv=5)
     rf.evaluate()
+    """
 
 if __name__ == "__main__":
     main()

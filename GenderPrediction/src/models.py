@@ -86,21 +86,21 @@ class MyModel:
 class MyLogisticRegression(MyModel):
     """
     regularization_strength: inverse of alpha coefficient in regularization
-    Possible regularizations: 'lasso', 'ridge', None
+    Possible regularizations: 'lasso', 'ridge', 'elasticnet', None
     """
     def __init__(self, X_train, X_test, y_train, y_test, random_state, 
-                regularization="ridge", regularization_strength=1,
+                regularization="ridge", regularization_strength=1, l1_ratio=None,
                 grid_search=False, scoring=None, param_grid=None, cv=0):
         
         super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
 
         if grid_search == False:
             if regularization == "lasso":
-                self.model = LogisticRegression(penalty="l1", solver="liblinear", C=regularization_strength, random_state=random_state)
+                self.model = LogisticRegression(penalty="l1", solver="liblinear", C=regularization_strength, random_state=random_state, l1_ratio=l1_ratio)
             elif regularization == "ridge":
-                self.model = LogisticRegression(penalty="l2", solver="lbfgs", C=regularization_strength, random_state=random_state)
-            else:
-                self.model = LogisticRegression(penalty=None, solver="lbfgs", C=regularization_strength, random_state=random_state)
+                self.model = LogisticRegression(penalty="l2", solver="lbfgs", C=regularization_strength, random_state=random_state, l1_ratio=l1_ratio)
+            elif regularization == "elasticnet":
+                self.model = LogisticRegression(penalty="elasticnet", solver="lbfgs", C=regularization_strength, random_state=random_state, l1_ratio=l1_ratio)
         
         elif grid_search == True:
             self.model = LogisticRegression(random_state=random_state)
