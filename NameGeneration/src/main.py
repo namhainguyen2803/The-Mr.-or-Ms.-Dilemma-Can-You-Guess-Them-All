@@ -4,6 +4,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import numpy
 
 import custom_dataset
 import model
@@ -14,10 +15,10 @@ NUM_EPOCHS = 20
 LR_RATE = 1e-4
 MAX_LENGTH = None
 LOAD_MODEL = True
-CHECKPOINT_PATH = "checkpoint/rnn_params.pt"
+CHECKPOINT_PATH = "C:/Users/Admin/The-Mr.-or-Ms.-Dilemma-Can-You-Guess-Them-All/NameGeneration/checkpoint/rnn_params.pt"
 print("Hello World")
 
-real_data = preprocess.retrieve_dataset_from_path("dataset/filter_middle_last_name.csv")
+real_data = preprocess.retrieve_dataset_from_path("C:/Users/Admin/The-Mr.-or-Ms.-Dilemma-Can-You-Guess-Them-All/NameGeneration/dataset/filter_middle_last_name.csv")
 # sample_data = ["nam hai"] * 20000
 real_split_character = preprocess.retrieve_character_from_document(real_data)
 character_to_token = preprocess.create_character_to_token()
@@ -56,7 +57,7 @@ def train_RNN(model, optimizer, start_epoch, MAX_LENGTH):
                 optimizer.step()
             print(f"Epoch {e}, loss: {loss}")
             print(preprocess.decode_word(model.sample()))
-            if e % 5 == 0:
+            if e % 2 == 0:
                 checkpoint = {"model_state_dict": model.state_dict(),
                                      "optimizer_state_dict": optimizer.state_dict(), "epoch": e}
                 torch.save(checkpoint, CHECKPOINT_PATH)
@@ -80,7 +81,7 @@ def train_RNN(model, optimizer, start_epoch, MAX_LENGTH):
                 optimizer.step()
             print(f"Epoch {e}, loss: {loss}")
             print(preprocess.decode_word(model.sample()))
-            if e % 5 == 0:
+            if e % 2 == 0:
                 checkpoint_params = {"model_state_dict": model.state_dict(),
                                      "optimizer_state_dict": optimizer.state_dict(), "epoch": e}
                 torch.save(checkpoint_params, CHECKPOINT_PATH)

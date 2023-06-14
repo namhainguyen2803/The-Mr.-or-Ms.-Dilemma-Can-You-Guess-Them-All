@@ -55,7 +55,7 @@ class RNN(nn.Module):
             while True:
                 i += 1
                 logits, h_prev = self.forward(x, h_prev)
-                np_logits = logits.numpy()
+                np_logits = logits.detach().cpu().numpy()
                 prob = np.exp(np_logits) / np.sum(np.exp(np_logits), axis=1)
                 id = np.random.choice(np.arange(self.vocab_size), p=prob.ravel())
                 texts.append(id)

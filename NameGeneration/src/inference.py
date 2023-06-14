@@ -4,7 +4,7 @@
 import main
 import torch
 import preprocess
-CHECKPOINT_PATH = "checkpoint/rnn_params.pt"
+CHECKPOINT_PATH = "C:/Users/Admin/The-Mr.-or-Ms.-Dilemma-Can-You-Guess-Them-All/NameGeneration/checkpoint/rnn_params.pt"
 
 # Define model and optimizer
 
