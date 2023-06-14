@@ -1,8 +1,11 @@
+"""
+    Created by @namhainguyen2803 on 29/05/2023
+"""
+
 import numpy as np
 
-
 class Compute_TF_IDF():
-    def __init__(self, list_document, dictionary=None, max_count=None, min_count=None, normalize_tf=False, smooth=True,
+    def __init__(self, list_document, dictionary=None, max_count=None, min_count=0, normalize_tf=False, smooth=True,
                  normalize_tfidf=None):
         self.list_document = list_document
         self.max_count = max_count
@@ -12,18 +15,23 @@ class Compute_TF_IDF():
         self.normalize_tfidf = normalize_tfidf
 
         self.dictionary = dictionary if dictionary != None else self.create_dictionary()
-        self.word_to_index = self.mapping_word_to_index()
         self.num_word = len(self.dictionary)
         self.num_document = len(self.list_document)
+        assert self.num_word != 0, "There is not any word in dictionary, please see lower min_count"
+        self.word_to_index = self.mapping_word_to_index()
         self.matrix_word_count = self.create_count_matrix()
+        self.idf_score = self.compute_idf()
 
     # Query word given index based on dictionary
     def retrieve_word(self, index):
-        return self.dictionary[index]
+        if 0 <= index <= self.num_word - 1:
+            return self.dictionary[index]
+        else:
+            return -1
 
     # Query index given word based on dictionary
     def retrieve_index(self, word):
-        return self.word_to_index[word.lower()]
+        return self.word_to_index.get(word.lower(), -1)
 
     # Split document into list of words
     def word_extraction(self, document):
@@ -47,7 +55,7 @@ class Compute_TF_IDF():
             set_word = set()
             mapping_word_count = self.map_word_to_count()
             for document in self.list_document:
-                list_word = self.word_extraction(document)
+                list_word = self.word_extraction(document.lower())
                 for word in list_word:
                     if self.min_count != None:
                         if mapping_word_count[word] < self.min_count:
@@ -106,8 +114,41 @@ class Compute_TF_IDF():
             sum_row = np.reshape(np.sum(tfidf, axis=1), (1, -1))
             return tfidf / sum_row
 
+    def create_count_matrix_for_test(self, list_doc):
+        mat = np.zeros((len(list_doc), self.num_word))
+        for i in range(len(list_doc)):
+            document = list_doc[i].lower()
+            list_word = self.word_extraction(document)
+            for j in range(len(list_word)):
+                ind = self.retrieve_index(list_word[j])
+                if ind != -1:
+                    mat[i, ind] += 1
+        return mat
+
+    def compute_tf_for_test(self, matrix_count_document):
+        length_name = np.sum(matrix_count_document, axis=1)
+        if self.normalize_tf == True:
+            return matrix_count_document / np.reshape(length_name, (-1, 1))
+        else:
+            return matrix_count_document
+
+    def compute_tf_idf_for_test(self, document):
+        matrix = self.create_count_matrix_for_test(document)
+        tf = self.compute_tf_for_test(matrix)
+        idf = self.idf_score
+        tfidf = tf * idf
+        if self.normalize_tfidf == None:
+            return tfidf
+        elif self.normalize_tfidf == "l2":
+            sum_squares = np.reshape(np.diag(tfidf.dot(tfidf)), (1, -1))
+            return tfidf / sum_squares
+        elif self.normalize_tfidf == "l1":
+            sum_row = np.reshape(np.sum(tfidf, axis=1), (1, -1))
+            return tfidf / sum_row
+
 if __name__ == "__main__":
-    list_name = ["nguyen nam hai", "pham quang tung", "doan the vinh", "nguyen ba thiem"]
+    list_name = ["Nguyễn Nam Hải", "Phạm Quang Tùng", "Đoàn Thế Vinh", "Nguyễn Bá Thiêm"]
     TF_IDF = Compute_TF_IDF(list_name)
     print(TF_IDF.dictionary)
     print(TF_IDF.compute_tf_idf())
+    print(TF_IDF.compute_tf_idf_for_test(["Hello My name is Hải"]))
