@@ -19,13 +19,18 @@ import colorama
 from colorama import Fore
 colorama.init(autoreset=True)
 
+import time
+import os
+
 class MyModel:
-    def __init__(self, X_train, X_test, y_train, y_test, grid_search, scoring):
+    def __init__(self, X_train, X_test, y_train, y_test, name, grid_search, scoring):
         
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
+
+        self.name = name
         
         self.grid_search = grid_search
         self.scoring = scoring
@@ -36,14 +41,21 @@ class MyModel:
     def fit(self):
         if self.grid_search == False:
             self.model.fit(self.X_train, self.y_train)
+            self.best_params = None
+            self.best_score = None
+
         elif self.grid_search == True:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore")
                 self.gs.fit(self.X_train, self.y_train)
                 
                 print(Fore.LIGHTYELLOW_EX + "CV based on " + self.scoring)
-                print(Fore.LIGHTBLUE_EX + "Best hyperparameters:", self.gs.best_params_)
-                print(Fore.LIGHTBLUE_EX + "Best validation score:",round(self.gs.best_score_, 4))
+
+                self.best_params = self.gs.best_params_
+                print(Fore.LIGHTBLUE_EX + "Best hyperparameters:", self.best_params)
+
+                self.best_score = round(self.gs.best_score_, 4)
+                print(Fore.LIGHTBLUE_EX + "Best validation score:", self.best_score)
 
     def predict(self):
         if self.grid_search == False:
@@ -59,28 +71,35 @@ class MyModel:
     
     def evaluate(self):
         print("------------------------------------------------------------")
+        start = time.time()
         self.fit()
+        end = time.time()
+
         print(Fore.LIGHTYELLOW_EX + "Metrics")
         y_pred = self.predict()
         y_proba = self.predict_proba()
         
         self.metric = Metric(self.y_test, y_pred, y_proba[:, 1])
 
-        cm, _ = self.metric.getConfusionMatrix()
+        self.cm, _ = self.metric.getConfusionMatrix()
         print(Fore.LIGHTBLUE_EX + "Confusion matrix:")
-        print(cm)
+        print(self.cm)
 
-        classification_report = self.metric.getClassificationReport()
+        self.classification_report = self.metric.getClassificationReport()
         print(Fore.LIGHTBLUE_EX + "Classification report:")
-        print(classification_report)
+        print(self.classification_report)
 
-        log_loss = self.metric.getLogLoss()
+        self.log_loss = round(self.metric.getLogLoss(), 4)
         print(Fore.LIGHTBLUE_EX + "Log loss:")
-        print(round(log_loss, 4))
+        print(self.log_loss)
 
-        roc_auc = self.metric.getRocAucScore()
+        self.roc_auc = round(self.metric.getRocAucScore(), 4)
         print(Fore.LIGHTBLUE_EX + "ROC-AUC score:")
-        print(round(roc_auc, 4))
+        print(self.roc_auc)
+
+        self.time_taken = round((end - start), 4)
+        print(Fore.LIGHTCYAN_EX + "Training time taken:")
+        print(self.time_taken)
         print("------------------------------------------------------------")
 
 class MyLogisticRegression(MyModel):
@@ -88,11 +107,11 @@ class MyLogisticRegression(MyModel):
     regularization_strength: inverse of alpha coefficient in regularization
     Possible regularizations: 'lasso', 'ridge', 'elasticnet', None
     """
-    def __init__(self, X_train, X_test, y_train, y_test, random_state, 
+    def __init__(self, X_train, X_test, y_train, y_test, random_state, name="logistic-regression",
                 regularization="ridge", regularization_strength=1, l1_ratio=None,
                 grid_search=False, scoring=None, param_grid=None, cv=0):
         
-        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+        super().__init__(X_train, X_test, y_train, y_test, name, grid_search, scoring)
 
         if grid_search == False:
             if regularization == "lasso":
@@ -115,17 +134,17 @@ class MySupportVectorMachine(MyModel):
     misclass_penalty: penalty for misclassifying a data point, smaller ~ large margin
     Possible kernels: 'linear', 'poly' (degree 3), 'rbf', 'sigmoid'
     """
-    def __init__(self, X_train, X_test, y_train, y_test, random_state,
+    def __init__(self, X_train, X_test, y_train, y_test, random_state, name="support-vector-machine",
                  misclass_penalty=1.0, kernel="rbf",
                  grid_search=False, scoring=None, param_grid=None, cv=0):
         
-        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+        super().__init__(X_train, X_test, y_train, y_test, name, grid_search, scoring)
 
         if grid_search == False:
-            self.model = SVC(C=misclass_penalty, kernel=kernel, random_state=random_state)
+            self.model = SVC(probability=True, C=misclass_penalty, kernel=kernel, random_state=random_state)
         
         elif grid_search == True:
-            self.model = SVC(random_state=random_state)
+            self.model = SVC(probability=True, random_state=random_state)
             self.gs = GridSearchCV(estimator=self.model, scoring=scoring, param_grid=param_grid, cv=cv)
     
     def fit(self):
@@ -138,11 +157,11 @@ class MyKNearestNeighbor(MyModel):
     Possible neighbor weights: 'uniform', 'distance', [callable]
     Possible metrics: 'cityblock' (manhattan), 'cosine', 'euclidean', 'minkowski' (p: power parameter)
     """
-    def __init__(self, X_train, X_test, y_train, y_test,
+    def __init__(self, X_train, X_test, y_train, y_test, name="k-nearest-neighbors",
                  n_neighbors=5, neighbor_weight="uniform", p=2, metric="minkowski",
                  grid_search=False, scoring=None, param_grid=None, cv=0):
         
-        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+        super().__init__(X_train, X_test, y_train, y_test, name, grid_search, scoring)
 
         if grid_search == False:
             self.model = KNeighborsClassifier(n_neighbors=n_neighbors, weights=neighbor_weight, p=p, metric=metric)
@@ -156,9 +175,9 @@ class MyKNearestNeighbor(MyModel):
         super().fit()
 
 class MyGaussianNaiveBayes(MyModel):
-    def __init__(self, X_train, X_test, y_train, y_test):
+    def __init__(self, X_train, X_test, y_train, y_test, name="gaussian-naive-bayes"):
 
-        super().__init__(X_train, X_test, y_train, y_test, False, None)
+        super().__init__(X_train, X_test, y_train, y_test, name, False, None)
 
         self.model = GaussianNB()
     
@@ -167,9 +186,9 @@ class MyGaussianNaiveBayes(MyModel):
         super().fit()
     
 class MyMultinomialNaiveBayes(MyModel):
-    def __init__(self, X_train, X_test, y_train, y_test):
+    def __init__(self, X_train, X_test, y_train, y_test, name="multinomial-naive-bayes"):
 
-        super().__init__(X_train, X_test, y_train, y_test, False, None)
+        super().__init__(X_train, X_test, y_train, y_test, name, False, None)
 
         self.model = MultinomialNB()
     
@@ -178,9 +197,9 @@ class MyMultinomialNaiveBayes(MyModel):
         super().fit()
 
 class MyBernoulliNaiveBayes(MyModel):
-    def __init__(self, X_train, X_test, y_train, y_test):
+    def __init__(self, X_train, X_test, y_train, y_test, name="bernoulli-naive-bayes"):
 
-        super().__init__(X_train, X_test, y_train, y_test, False, None)
+        super().__init__(X_train, X_test, y_train, y_test, name, False, None)
 
         self.model = BernoulliNB()
     
@@ -189,12 +208,12 @@ class MyBernoulliNaiveBayes(MyModel):
         super().fit()
 
 class MyDecisionTree(MyModel):
-    def __init__(self, X_train, X_test, y_train, y_test, random_state,
+    def __init__(self, X_train, X_test, y_train, y_test, random_state, name="decision-tree",
                  split_criterion="entropy", max_depth=None, min_samples_split=2, min_samples_leaf=1,
                  max_leaf_nodes=None, max_features=None, ccp_alpha=0.0,
                  grid_search=False, scoring=None, param_grid=None, cv=0):
         
-        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+        super().__init__(X_train, X_test, y_train, y_test, name, grid_search, scoring)
 
         if grid_search == False:
             self.model = DecisionTreeClassifier(criterion=split_criterion, max_depth=max_depth,
@@ -211,13 +230,13 @@ class MyDecisionTree(MyModel):
         super().fit()
 
 class MyRandomForest(MyModel):
-    def __init__(self, X_train, X_test, y_train, y_test, random_state,
+    def __init__(self, X_train, X_test, y_train, y_test, random_state, name="random-forest",
                  n_estimators=100, split_criterion="entropy", max_depth=None, min_samples_split=2, min_samples_leaf=1,
                  max_leaf_nodes=None, max_features=None, ccp_alpha=0.0,
                  bootstrap=True, oob_score=True, max_samples=None,
                  grid_search=False, scoring=None, param_grid=None, cv=0):
         
-        super().__init__(X_train, X_test, y_train, y_test, grid_search, scoring)
+        super().__init__(X_train, X_test, y_train, y_test, name, grid_search, scoring)
 
         if grid_search == False:
             self.model = RandomForestClassifier(n_estimators=n_estimators, criterion=split_criterion, max_depth=max_depth, 

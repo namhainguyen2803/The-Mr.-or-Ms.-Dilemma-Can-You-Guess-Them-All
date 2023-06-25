@@ -11,9 +11,12 @@ def truncated_svd(X_train, X_test, random_state, n_components=100):
     transformed_X_test = svd.transform(X_test)
     return transformed_X_train, transformed_X_test
 
-def data_reader(random_state, truncate=True):
+def data_reader(random_state, drop_dup=True, truncate=True):
     parent_directory = os.path.abspath(os.path.join(os.getcwd(), ".."))
-    file_path = os.path.join(parent_directory, "dataset/name_full.csv")
+    if drop_dup == True:
+        file_path = os.path.join(parent_directory, "dataset/processed-full-name.csv")
+    else:
+        file_path = os.path.join(parent_directory, "dataset/processed-full-name-dup.csv")
 
     # Import full data and split train-test set
     data = pd.read_csv(file_path)
