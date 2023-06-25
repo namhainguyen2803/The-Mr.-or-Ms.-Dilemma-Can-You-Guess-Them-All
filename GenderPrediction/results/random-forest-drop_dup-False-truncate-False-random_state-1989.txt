@@ -1,0 +1,25 @@
+random-forest
+random-state = 1989     drop_dup = False     truncate = False
+
+CV based on accuracy
+Best hyperparameters: {'bootstrap': True, 'ccp_alpha': 0.003, 'criterion': 'entropy', 'max_depth': 60, 'max_leaf_nodes': 75, 'max_samples': 0.25, 'n_estimators': 125, 'oob_score': True}
+Best validation score: 0.9326
+
+Metrics
+Confusion matrix:
+[[1970  259]
+ [  61 2985]]
+Accuracy: 0.9393
+Classification report:
+              precision    recall  f1-score   support
+
+           0       0.97      0.88      0.92      2229
+           1       0.92      0.98      0.95      3046
+
+    accuracy                           0.94      5275
+   macro avg       0.95      0.93      0.94      5275
+weighted avg       0.94      0.94      0.94      5275
+
+Log loss: 0.2029
+ROC-AUC score: 0.9812
+Training time taken: 16234.5464

@@ -10,7 +10,7 @@ def main():
     # Set random seed
     RANDOM_STATE = 1989 
     DROP_DUP = False
-    TRUNCATE = False
+    TRUNCATE = True
 
     # Read data
     tfidf_X_train, tfidf_X_test, y_train, y_test = data_reader(random_state=RANDOM_STATE, drop_dup=DROP_DUP, truncate=TRUNCATE)
@@ -39,7 +39,7 @@ def main():
     export_result(model=logreg, random_state=RANDOM_STATE, drop_dup=DROP_DUP, truncate=TRUNCATE)
     """
         ## SVM
-    """
+    
     SVM_PARAM_GRID = {
         'C': [0.01, 0.03, 0.1, 0.3, 1, 3],
         'kernel': ['linear', 'poly', 'rbf', 'sigmoid']
@@ -48,7 +48,7 @@ def main():
                                  grid_search=True, scoring="accuracy", param_grid=SVM_PARAM_GRID, cv=5)
     svm.evaluate()
     export_result(model=svm, random_state=RANDOM_STATE, drop_dup=DROP_DUP, truncate=TRUNCATE)
-    """
+    
         ## KNN
     """
     KNN_PARAM_GRID = [
@@ -90,12 +90,9 @@ def main():
         ### DT
     """
     DT_PARAM_GRID = {
-        'criterion': ["entropy", "gini"],
+        'criterion': ["entropy"],
         'max_depth': [20, 40, 60],
-        'min_samples_split': [0.25, 0.5, 0.75, 1],
-        'min_samples_leaf': [0.25, 0.5, 0.75, 1],
-        'max_leaf_nodes': [20, 40, 60],
-        'max_features': [0.5, 0.75],
+        'max_leaf_nodes': [50, 75, 100],
         'ccp_alpha': [0.01, 0.03, 0.1]
     }
     dt = MyDecisionTree(tfidf_X_train, tfidf_X_test, y_train, y_test, random_state=RANDOM_STATE,
@@ -104,39 +101,31 @@ def main():
     export_result(model=dt, random_state=RANDOM_STATE, drop_dup=DROP_DUP, truncate=TRUNCATE)
     """
         ### RF
-    
+    """
     RF_PARAM_DRIG = [
         {
-            'n_estimators': [20, 40, 60],
-            'criterion': ["entropy", "gini"],
+            'n_estimators': [50, 75, 100, 125],
+            'criterion': ["entropy"],
             'max_depth': [20, 40, 60],
-            'max_leaf_nodes': [20, 40, 60],
-            'ccp_alpha': [0.01, 0.03, 0.1, 0.3],
+            'max_leaf_nodes': [50, 75, 100],
+            'ccp_alpha': [0.003, 0.01, 0.03],
             'bootstrap': [False],
         },
         {
-            'n_estimators': [20, 40, 60],
-            'criterion': ["entropy", "gini"],
+            'n_estimators': [50, 75, 100, 125],
+            'criterion': ["entropy"],
             'max_depth': [20, 40, 60],
-            'max_leaf_nodes': [20, 40, 60],
-            'ccp_alpha': [0.01, 0.03, 0.1, 0.3],
+            'max_leaf_nodes': [50, 75, 100],
+            'ccp_alpha': [0.003, 0.01, 0.03],
             'bootstrap': [True],
             'oob_score': [True, False],
             'max_samples': [0.25, 0.5, 0.75, 1]
         }
     ]
-    RF_PARAM_DRIG = {
-            'n_estimators': [10, 20, 30],
-            'criterion': ["entropy"],
-            'max_depth': [20],
-            'max_leaf_nodes': [20],
-            'ccp_alpha': [0.01],
-            'bootstrap': [False],
-    }
     rf = MyRandomForest(tfidf_X_train, tfidf_X_test, y_train, y_test, random_state=RANDOM_STATE,
                         grid_search=True, scoring="accuracy", param_grid = RF_PARAM_DRIG, cv=5)
     rf.evaluate()
-    
-
+    export_result(model=rf, random_state=RANDOM_STATE, drop_dup=DROP_DUP, truncate=TRUNCATE)
+    """
 if __name__ == "__main__":
     main()
