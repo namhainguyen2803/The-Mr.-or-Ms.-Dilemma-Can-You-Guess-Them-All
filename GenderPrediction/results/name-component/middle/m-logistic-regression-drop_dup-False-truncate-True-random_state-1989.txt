@@ -1,0 +1,25 @@
+logistic-regression
+random-state = 1989     drop_dup = False     truncate = True
+
+CV based on accuracy
+Best hyperparameters: {'penalty': None}
+Best validation score: 0.9103
+
+Metrics
+Confusion matrix:
+[[1866  386]
+ [  81 2956]]
+Accuracy: 0.9117
+Classification report:
+              precision    recall  f1-score   support
+
+           0       0.96      0.83      0.89      2252
+           1       0.88      0.97      0.93      3037
+
+    accuracy                           0.91      5289
+   macro avg       0.92      0.90      0.91      5289
+weighted avg       0.92      0.91      0.91      5289
+
+Log loss: 0.2364
+ROC-AUC score: 0.959
+Training time taken: 2.4684
