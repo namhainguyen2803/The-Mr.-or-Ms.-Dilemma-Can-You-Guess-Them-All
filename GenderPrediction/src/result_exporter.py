@@ -1,11 +1,11 @@
 from models import *
 import os
 
-def export_result(model:MyModel, random_state:int, drop_dup:bool, truncate:bool):
+def export_result(model:MyModel, random_state:int, drop_dup:bool, truncate:bool, component_test):
     accuracy = round((model.cm[0][0] + model.cm[1][1]) / (model.cm[0][0] + model.cm[1][1] + model.cm[1][0] + model.cm[0][1]), 4)
     
     parent_directory = os.path.abspath(os.path.join(os.getcwd(), ".."))
-    file_path = os.path.join(parent_directory, "results/" + str(model.name) + "-drop_dup-" + str(drop_dup) + "-truncate-" + str(truncate) + "-random_state-" + str(random_state) + ".txt")
+    file_path = os.path.join(parent_directory, "results/" + str(component_test) + "-" + str(model.name) + "-drop_dup-" + str(drop_dup) + "-truncate-" + str(truncate) + "-random_state-" + str(random_state) + ".txt")
     
     with open(file_path, 'w') as f:
         f.write(str(model.name) + '\n')
