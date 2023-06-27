@@ -34,3 +34,28 @@ def data_reader(random_state, drop_dup=True, truncate=True):
         tfidf_X_train, tfidf_X_test = truncated_svd(tfidf_X_train, tfidf_X_test, random_state=random_state)
     
     return tfidf_X_train, tfidf_X_test, y_train, y_test
+
+# DROP_DUP = FALSE, TRUNCATE = TRUE
+def component_data_reader(random_state, component_test):
+    parent_directory = os.path.abspath(os.path.join(os.getcwd(), ".."))
+    if component_test == 'f': # first name
+        file_path = os.path.join(parent_directory, "dataset/processed-first-name.csv")
+    elif component_test == 'm': # middle name
+        file_path = os.path.join(parent_directory, "dataset/processed-middle-name.csv")
+    elif component_test == 'l': # last name
+        file_path = os.path.join(parent_directory, "dataset/processed-last-name.csv")
+    elif component_test == 'mf': # middle-first
+        file_path = os.path.join(parent_directory, "dataset/processed-middle-first-name.csv")
+    
+    data = pd.read_csv(file_path)
+    X = data["Full_Name"].values
+    y = data["Gender"].values
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state, stratify=y)
+
+    TF_IDF = Compute_TF_IDF(X_train)
+    tfidf_X_train = TF_IDF.compute_tf_idf()
+    tfidf_X_test = TF_IDF.compute_tf_idf_for_test(X_test)
+
+    tfidf_X_train, tfidf_X_test = truncated_svd(tfidf_X_train, tfidf_X_test, random_state=random_state)
+
+    return tfidf_X_train, tfidf_X_test, y_train, y_test
