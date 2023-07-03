@@ -19,7 +19,7 @@ def convert(text):
   return output.lower()
 
 class Compute_TF_IDF():
-  def __init__(self, list_document, dictionary=None, max_count=None, min_count=10, normalize_tf=False, smooth=True, normalize_tfidf=None):
+  def __init__(self, list_document, dictionary=None, max_count=None, min_count=0, normalize_tf=False, smooth=True, normalize_tfidf=None):
     self.list_document = list_document
     self.max_count = max_count
     self.min_count = min_count
