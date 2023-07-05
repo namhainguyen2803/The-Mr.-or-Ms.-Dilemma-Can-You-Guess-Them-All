@@ -1,5 +1,7 @@
 # The-Mr.-or-Ms.-Dilemma-Can-You-Guess-Them-All
 
+## Keywords: Vietnamese Name Analysis · Vietnamese Name Prediction · Vietnamese Name Generation
+
 ## Collaborators 
 | Name                         | Student ID       | Email                                      |
 | :---                         |    :----:        |          :---:                             |
