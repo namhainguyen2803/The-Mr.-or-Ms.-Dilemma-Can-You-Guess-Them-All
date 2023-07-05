@@ -3,6 +3,17 @@
 ## Keywords
 **Vietnamese Name Analysis · Vietnamese Name Prediction · Vietnamese Name Generation**
 
+## Overviews
+In human society, names are often inextricably linked to individual identity, and often, they reflect
+a community’s gender-based norms and values. This paper sets out to discover the pattern between
+Vietnamese names and gender, via machine learning models that can categorize the latter based
+on the former. This paper introduces a dataset of gender-annotated names, vectorized with TF–IDF
+(term frequency–inverse document frequency), as well five binary classification models (Logistic
+Regression, Bernoulli Naive Bayes, Random Forest, Support Vector Machine, and Neural Network). In
+addition, this paper also investigates the impact of duplicate deletion and dimensionality reduction by
+Truncated SVD in data preprocessing on the models’ performance. An assessment of the importance
+of each name component (last, middle, first) on gender classification follows. These findings shed light on the relationship between Vietnamese names and gender, highlighting the potential of machine learning approaches to decipher gender-based naming conventions.
+
 ## Collaborators 
 | Name                         | Student ID       | Email                                      |
 | :---                         |    :----:        |          :---:                             |
