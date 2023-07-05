@@ -136,7 +136,8 @@ def main():
         ## LOGREG 
     
     LOGREG_PARAM_GRID = {
-        'penalty': [None]
+        'penalty': ['l1'],
+        'C': [0.01]
     }
     logreg = MyLogisticRegression(tfidf_X_train, tfidf_X_test, y_train, y_test, random_state=RANDOM_STATE,
                                 grid_search=True, scoring="accuracy", param_grid=LOGREG_PARAM_GRID, cv=5)
