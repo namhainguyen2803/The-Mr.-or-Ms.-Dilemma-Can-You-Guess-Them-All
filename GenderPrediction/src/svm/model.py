@@ -17,6 +17,9 @@ class Support_Vector_Machine():
         self.b_sp = None
         self.b_t = None
 
+        self.verbose = True
+        self.print_every = 5
+
         self.tolerance = 1e-5
         self.gamma = kwargs.pop("gamma", "scale")
         self.degree = kwargs.pop("degree", 3)
@@ -95,6 +98,8 @@ class Support_Vector_Machine():
                     self.step(i, j, h_i, h_j)
             y_pred = self.__predict_class(self.X, "H")
             acc = np.mean(y_pred == self.y)
+            if self.verbose == True and iter % self.print_every == 0:
+                print(f"Iteration {iter}, accuracy: {acc}")
             if acc > b_acc:
                 b_acc = acc
                 self.b_sp = self.sp.copy()
@@ -111,6 +116,10 @@ class Support_Vector_Machine():
     def predict_class(self, x):
         res = self.predict(x)
         return np.sign(res)
+
+    def score(self, X, y):
+        y_pred = self.predict_class(X)
+        return np.mean(y_pred == y)
 
     def __predict(self, x, i=None):
         y = np.reshape(self.y, (-1, 1))
