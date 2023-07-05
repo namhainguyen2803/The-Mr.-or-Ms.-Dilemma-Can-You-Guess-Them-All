@@ -13,7 +13,7 @@ Finally, we have implemented the project both from scratch and from libraries.
 ## Collaborators 
 | Name                         | Student ID       | Email                                      |
 | :---                         |    :----:        |          :---:                             |
-| Nguyen Nam Hai              | 20214894         | tuan.lda204929@sis.hust.edu.vn            |
+| Nguyen Nam Hai              | 20214894         | hai.nn214894@sis.hust.edu.vn            |
 | Doan The Vinh             | 20210940         | vinh.dt210940@sis.hust.edu.vn            |
 | Pham Quang Tung             | 20210919         | tung.pq210919@sis.hust.edu.vn|
 | Nguyen Ba Thiem      | 20214931         | thiem.nb214931@sis.hust.edu.vn              |
