@@ -130,6 +130,7 @@ elif name_model == "nn":
         "print_every": 10,
         "regularization": 0.01
     }
+
     model = nn.VanillaFeedForwardNetwork(architecture=architecture, data=data, optim=optimizer, **hyper_params)
     start = time.time()
     model.train()

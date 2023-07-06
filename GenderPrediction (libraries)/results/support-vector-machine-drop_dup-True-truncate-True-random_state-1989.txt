@@ -1,0 +1,25 @@
+support-vector-machine
+random-state = 1989     drop_dup = True     truncate = True
+
+CV based on accuracy
+Best hyperparameters: {'C': 1, 'kernel': 'linear'}
+Best validation score: 0.9271
+
+Metrics
+Confusion matrix:
+[[1510  224]
+ [  68 2339]]
+Accuracy: 0.9295
+Classification report:
+              precision    recall  f1-score   support
+
+           0       0.96      0.87      0.91      1734
+           1       0.91      0.97      0.94      2407
+
+    accuracy                           0.93      4141
+   macro avg       0.93      0.92      0.93      4141
+weighted avg       0.93      0.93      0.93      4141
+
+Log loss: 0.24
+ROC-AUC score: 0.977
+Training time taken: 4274.502

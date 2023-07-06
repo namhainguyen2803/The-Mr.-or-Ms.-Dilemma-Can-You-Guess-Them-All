@@ -1,0 +1,25 @@
+bernoulli-naive-bayes
+random-state = 1989     drop_dup = False     truncate = False
+
+CV based on None
+Best hyperparameters: None
+Best validation score: None
+
+Metrics
+Confusion matrix:
+[[2098  131]
+ [  72 2974]]
+Accuracy: 0.9615
+Classification report:
+              precision    recall  f1-score   support
+
+           0       0.97      0.94      0.95      2229
+           1       0.96      0.98      0.97      3046
+
+    accuracy                           0.96      5275
+   macro avg       0.96      0.96      0.96      5275
+weighted avg       0.96      0.96      0.96      5275
+
+Log loss: 0.1308
+ROC-AUC score: 0.9879
+Training time taken: 0.22
