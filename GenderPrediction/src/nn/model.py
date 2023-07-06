@@ -6,12 +6,12 @@ import numpy as np
 import copy
 
 class VanillaFeedForwardNetwork(object):
-    def __init__(self, architecture, X_train, y_train, optim, **kwargs):
+    def __init__(self, architecture, data, optim, **kwargs):
         self.model = architecture
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_test = None
-        self.y_test = None
+        self.X_train = data["X_train"]
+        self.y_train = data["y_train"]
+        self.X_valid = data["X_valid"]
+        self.y_valid = data["y_valid"]
         self.update_rule = optim
 
         self.best_model = None
@@ -67,23 +67,33 @@ class VanillaFeedForwardNetwork(object):
 
     def train(self):
         best_loss = 1e9
+        train_loss = None
+        valid_loss = None
         tolerance = self.lr_tolerance
         for t in range(self.num_epochs):
             batch_obj = self.data_generator(self.X_train, self.y_train, True)
             for x_batch, y_batch in batch_obj:
                 self.step(x_batch, y_batch)
-            train_loss, _ = self.model.loss(self.X_train, self.y_train)
+
             if self.verbose == True:
                 if t % self.print_every == 0:
+                    train_loss = self.model.loss_only(self.X_train, self.y_train)
                     train_acc = self.check_accuracy(self.model, self.X_train, self.y_train)
-                    if self.X_test is not None and self.y_test is not None:
-                        test_acc = self.check_accuracy(self.model, self.X_test, self.y_test)
-                        print(f"Iteration {t}: training loss {train_loss}, training accuracy: {train_acc}, test accuracy: {test_acc}")
+                    if self.X_valid is not None and self.y_valid is not None:
+                        test_acc = self.check_accuracy(self.model, self.X_valid, self.y_valid)
+                        print(f"Iteration {t}: training loss {train_loss}, training accuracy: {train_acc}, validation accuracy: {test_acc}")
                     else:
                         print(f"Iteration {t}: training loss {train_loss}, training accuracy: {train_acc}")
 
-            if train_loss < best_loss:
-                best_loss = train_loss
+            if self.X_valid is not None and self.y_valid is not None:
+                valid_loss = self.model.loss_only(self.X_valid, self.y_valid)
+                current_loss = valid_loss
+            else:
+                train_loss = self.model.loss_only(self.X_train, self.y_train)
+                current_loss = train_loss
+
+            if current_loss < best_loss:
+                best_loss = current_loss
                 tolerance = self.lr_tolerance
                 self.best_model = copy.deepcopy(self.model)
             else:

@@ -104,16 +104,33 @@ elif name_model == "nn":
     architecture = architecture.FullyConnectedNet(input_dim=100, hidden_dims=[256, 64, 16, 8])
     optimizer = optim.rmsprop
 
+    if len(SPLIT_RATIO) == 3:
+        valid_name = data["valid"]["X"]
+        y_valid = data["valid"]["y"]
+        valid_tf_idf_matrix = TF_IDF.compute_tf_idf_for_test(valid_name)
+        X_valid = svd.transform(valid_tf_idf_matrix)
+        print(f"Validation set information: {valid_tf_idf_matrix.shape, y_valid.shape}")
+    else:
+        X_valid = None
+        y_valid = None
+
+    data = {
+        "X_train": X,
+        "y_train": y,
+        "X_valid": X_valid,
+        "y_valid": y_valid
+    }
+
     hyper_params = {
         "num_epochs": 300,
         "batch_size": 1000,
         "lr_decay": 0.5,
         "learning_rate": 0.001,
-        "verbose": True,
+        "verbose": False,
         "print_every": 10,
         "regularization": 0.01
     }
-    model = nn.VanillaFeedForwardNetwork(architecture=architecture, X_train=X, y_train=y, optim=optimizer, **hyper_params)
+    model = nn.VanillaFeedForwardNetwork(architecture=architecture, data=data, optim=optimizer, **hyper_params)
     start = time.time()
     model.train()
     finish = time.time()

@@ -74,6 +74,27 @@ class FullyConnectedNet(object):
             dout = dx
         return loss, grads
 
+    def loss_only(self, X, y):
+        x = X.astype(self.dtype)
+        caches = []
+        for i in range(self.num_layers - 1):
+            W = self.params["W" + str(int(i + 1))]
+            b = self.params["b" + str(int(i + 1))]
+            x, cache = affine_relu_forward(x, W, b)
+            caches.append(cache)
+
+        W = self.params["W" + str(self.num_layers)]
+        b = self.params["b" + str(self.num_layers)]
+        scores, cache = affine_forward(x, W, b)
+        caches.append(cache)
+
+        loss, out_grad = binary_cross_entropy_loss_with_sigmoid(scores, y)
+
+        for i in range(self.num_layers):
+            w = self.params["W" + str(i + 1)]
+            loss += 0.5 * self.regularization * np.sum(w * w)
+        return loss
+
     def predict_proba(self, X):
         x = X.astype(self.dtype)
         for i in range(self.num_layers - 1):

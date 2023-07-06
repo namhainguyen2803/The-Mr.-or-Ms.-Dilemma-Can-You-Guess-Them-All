@@ -46,10 +46,10 @@ class DataSpliter(object):
         if self.having_validation:
             validation_set = {"X": full_data[decision == 2],
                               "y": full_label[decision == 2]}
-            data = {"train": training_set, "test": test_set, "validation": validation_set}
+            data = {"train": training_set, "test": test_set, "valid": validation_set}
             return data
         else:
-            data = {"train": training_set, "test": test_set}
+            data = {"train": training_set, "test": test_set, "valid": None}
             return data
 
 
