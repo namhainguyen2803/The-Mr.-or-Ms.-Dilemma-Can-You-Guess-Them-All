@@ -62,6 +62,9 @@ class MyModel:
             return self.model.predict(self.X_test)
         elif self.grid_search == True:
             return self.gs.best_estimator_.predict(self.X_test)
+        
+    def predict_new(self, X_test):
+        return self.model.predict(X_test)
 
     def predict_proba(self):
         if self.grid_search == False:
